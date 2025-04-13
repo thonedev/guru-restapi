@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class Bear {
+public class Beer {
     private UUID id;
     private Integer version;
     private String beerName;
@@ -21,6 +21,3 @@ public class Bear {
     private LocalDateTime updateDate;
 }
 
-enum BeerStyle {
-    LAGER, PILSNER, STOUT, GOSE, PORTER, ALE, WHEAT, IPA, PALE_ALE, SAISON
-}
