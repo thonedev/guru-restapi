@@ -1,69 +1,60 @@
-# 🍺 Beer REST API
 
-Esta é uma API REST desenvolvida com Spring Boot para o gerenciamento de cervejas. O projeto permite operações CRUD completas em uma estrutura simples e funcional.
+# 🍺 Projeto Reactive Beer API
+
+Este projeto demonstra uma arquitetura **reativa** usando **Spring WebFlux**, **Kafka** e um backend simulando operações de CRUD de cervejas.
 
 ## 🚀 Tecnologias Utilizadas
 
-- Java 17+
-- Spring Boot
+- Java 21+
+- Spring Boot 3.4.4
+- Spring WebFlux (WebClient)
+- Reactor Kafka
+- Apache Kafka
+- MongoDB (docker-compose)
 - Lombok
-- RESTful APIs
 - JUnit 5
 
 ## 📦 Endpoints
 
-### Base URL
+### API Principal (Beer REST API)
+Base URL:
 ```bash
-http://localhost:8080/api/v1/beer
+http://localhost:8086/api/v1/beer
 ```
 
-### 📘 Criar uma nova cerveja
+| Método | Rota                | Ação                 |
+|--------|---------------------|----------------------|
+| GET    | `/api/v1/beer`        | Listar todas as cervejas |
+| GET    | `/api/v1/beer/{id}`   | Buscar cerveja por ID |
+| POST   | `/api/v1/beer`        | Criar nova cerveja    |
+| PUT    | `/api/v1/beer/{id}`   | Atualizar cerveja     |
+| PATCH  | `/api/v1/beer/{id}`   | Atualizar parcial     |
+| DELETE | `/api/v1/beer/{id}`   | Deletar cerveja       |
+
+### API Kafka Sender
+Base URL:
 ```bash
-POST /api/v1/beer
+http://localhost:8085/api/v1/kafka/beer
 ```
 
-Body JSON:
-```json
-{
-  "beerName": "Galaxy Cat",
-  "beerStyle": "PALE_ALE",
-  "upc": "12356",
-  "price": 12.99,
-  "quantityOnHand": 100,
-  "version": 1
-}
-```
+| Método | Rota                 | Ação via Kafka        |
+|--------|----------------------|-----------------------|
+| POST   | `/api/v1/kafka/beer`   | Envia criação para Kafka |
+| PUT    | `/api/v1/kafka/beer/{id}` | Atualiza via Kafka  |
+| PATCH  | `/api/v1/kafka/beer/{id}` | Atualiza parcial via Kafka |
+| DELETE | `/api/v1/kafka/beer/{id}` | Deleta via Kafka     |
 
-### 📗 Listar todas as cervejas
-```bash
-GET /api/v1/beer
-```
+### WebClient
+- `GET /call` ➡️ Faz um GET reativo para listar cervejas.
+- `POST /post` ➡️ Faz um POST reativo para criar uma nova cerveja.
 
-### 📙 Buscar cerveja por ID
-```bash
-GET /api/v1/beer/{id}
-```
-
-### 📕 Atualizar uma cerveja (total)
-```bash
-PUT /api/v1/beer/{id}
-```
-Body JSON: mesmo formato do POST.
-
-### 📝 Atualizar uma cerveja (parcial)
-```bash
-PATCH /api/v1/beer/{id}
-```
-Body JSON: qualquer campo pode ser enviado de forma parcial.
-
-### ❌ Deletar uma cerveja
-```bash
-DELETE /api/v1/beer/{id}
-```
-## 🧱 Modelo de Dados
+## 🧱 Modelo Beer
 
 ```java
+@Builder
+@Data
 public class Beer {
+    private String httpMethod;
     private UUID id;
     private Integer version;
     private String beerName;
@@ -77,39 +68,62 @@ public class Beer {
 ```
 
 Enum BeerStyle:
-- LAGER
-- PILSNER
-- STOUT
-- GOSE
-- PORTER
-- ALE
-- WHEAT
-- IPA
-- PALE_ALE
-- SAISON
+- LAGER, PILSNER, STOUT, GOSE, PORTER, ALE, WHEAT, IPA, PALE_ALE, SAISON
+
+## ⚙️ docker-compose
+
+```yaml
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.1
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.1
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    ports:
+      - "9080:8080"
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    ports:
+      - "9081:8081"
+```
 
 ## 🛠️ Como rodar o projeto
 
-1. Clone o repositório:
+1. Suba o ambiente:
 ```bash
-git clone https://github.com/seu-usuario/beer-rest-api.git
+docker-compose up -d
 ```
 
-3. Importe o projeto em sua IDE (IntelliJ, Eclipse, etc).
-
-4. Rode a aplicação:
+2. Rode as aplicações:
 ```bash
 ./mvnw spring-boot:run
 ```
 
-6. Acesse os endpoints via Postman, Insomnia, ou cURL.
-
----
+- Porta 8085: WebClient + Kafka Producer
+- Porta 8086: API REST + Kafka Consumer
 
 ## ✅ Testes
 
-Execute os testes com:
+Para rodar os testes:
+```bash
 ./mvnw test
+```
 
 ## 💡 Extras
 
