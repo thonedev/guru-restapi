@@ -5,7 +5,6 @@ import guru.restapi.service.BeerService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -21,12 +20,13 @@ public class BeerController {
     @PostMapping
     public ResponseEntity<Beer> create(@RequestBody Beer beer){
         var createdBeer = beerService.save(beer);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequestUri()
-                .path("/{id}")
-                .buildAndExpand(createdBeer.getId())
-                .toUri();
-        return ResponseEntity.created(location).body(createdBeer);
+//        URI location = ServletUriComponentsBuilder
+//                .fromCurrentRequestUri()
+//                .path("/{id}")
+//                .buildAndExpand(createdBeer.getId())
+//                .toUri();
+//        return ResponseEntity.created(location).body(createdBeer);
+        return ResponseEntity.ok(createdBeer);
     }
 
     @GetMapping

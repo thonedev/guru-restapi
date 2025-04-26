@@ -1,0 +1,33 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: Guru RestApi
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: testdb
+      username: admin
+      password: admin
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic1: beer
+    topic2: topic-2
+    consumer:
+      group-id: spring-boot-consumer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+logging:
+  level:
+    org:
+      apache:
+        kafka: WARN
+    root: INFO
