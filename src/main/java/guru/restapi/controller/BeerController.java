@@ -5,6 +5,9 @@ import guru.restapi.service.BeerService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.List;
@@ -17,17 +20,45 @@ public class BeerController {
 
     private final BeerService beerService;
 
-    @PostMapping
-    public ResponseEntity<Beer> create(@RequestBody Beer beer){
-        var createdBeer = beerService.save(beer);
+    //Spring web
+//    @PostMapping
+//    public ResponseEntity<Beer> create(@RequestBody Beer beer){
+//        var createdBeer = beerService.save(beer);
+//
 //        URI location = ServletUriComponentsBuilder
 //                .fromCurrentRequestUri()
 //                .path("/{id}")
 //                .buildAndExpand(createdBeer.getId())
 //                .toUri();
 //        return ResponseEntity.created(location).body(createdBeer);
-        return ResponseEntity.ok(createdBeer);
+//
+//    }
+
+//    @PostMapping
+//    public Mono<ResponseEntity<Beer>> create(@RequestBody Beer beer) {
+//        return beerService.save(beer)
+//                .map(createdBeer -> {
+//                    URI location = UriComponentsBuilder.fromPath("/api/v1/beer/{id}")
+//                            .buildAndExpand(createdBeer.getId())
+//                            .toUri();
+//                    return ResponseEntity.created(location).body(createdBeer);
+//                });
+//    }
+
+    @PostMapping
+    public Mono<ResponseEntity<Beer>> create(@RequestBody Beer beer, @RequestHeader("Host") String host) {
+        return beerService.save(beer)
+                .map(createdBeer -> {
+                    String baseUrl = "http://" + host; // Obtém o baseUrl dinamicamente
+                    URI location = UriComponentsBuilder.fromUriString(baseUrl)
+                            .path("/api/v1/beer/{id}")
+                            .buildAndExpand(createdBeer.getId())
+                            .toUri();
+                    return ResponseEntity.created(location).body(createdBeer);
+                });
     }
+
+
 
     @GetMapping
     public ResponseEntity<List<Beer>> findAll(){

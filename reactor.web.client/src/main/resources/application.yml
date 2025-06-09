@@ -1,6 +1,9 @@
 server:
   port: 8085
 
+client:
+  id: ccloud-springboot-client-8a7e92a2-234a-4db8-a8c9-9e2a114f495f
+
 spring:
   application:
     name: Reactive Requests
@@ -13,17 +16,31 @@ spring:
       password: admin
 
   kafka:
-    bootstrap-servers: localhost:9092
-    topic1: beer
-    topic2: topic-2
+    bootstrap-servers: pkc-619z3.us-east1.gcp.confluent.cloud:9092
+    topic1: topic_0
     consumer:
       group-id: spring-boot-consumer
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
+
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      spring.json.value.default.type: com.fasterxml.jackson.databind.JsonNode
+      spring.json.trusted.packages: "*"
+      sasl:
+        mechanism: PLAIN
+        jaas:
+          config: ${JASS_CONFIG}
+      security:
+        protocol: SASL_SSL
+      session:
+        timeout:
+          ms: 45000
 
 logging:
   level:

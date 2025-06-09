@@ -12,7 +12,6 @@ public class KafkaProperties {
     private Consumer consumer;
     private Producer producer;
     private String topic1;
-    private String topic2;
 
     @Data
     public static class Consumer{

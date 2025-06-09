@@ -1,9 +1,11 @@
 package guru.restapi.service;
 
+import guru.restapi.exception.NotFountException;
 import guru.restapi.model.Beer;
 import guru.restapi.model.BeerStyle;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -59,7 +61,7 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public Beer save(Beer beer) {
+    public Mono<Beer> save(Beer beer) {
 
         Beer beerToSave = Beer.builder()
                 .id(UUID.randomUUID())
@@ -76,12 +78,16 @@ public class BeerServiceImpl implements BeerService {
 
         beerMap.put(beerToSave.getId(), beerToSave);
 
-        return beerToSave;
+        return Mono.just(beerToSave);
     }
 
     @Override
     public Beer update(UUID beerId, Beer beer) {
         var beerToUpdate = beerMap.get(beerId);
+
+        if(beerToUpdate == null) {
+            throw new NotFountException("Entidade não encontrada para atualizar!");
+        }
 
         beerToUpdate.setBeerName(beer.getBeerName());
         beerToUpdate.setBeerStyle(beer.getBeerStyle());
@@ -97,6 +103,9 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public Beer patch(UUID beerId, Beer beer) {
         var beerToUpdate = beerMap.get(beerId);
+        if(beerToUpdate == null) {
+            throw new NotFountException("Entidade não encontrada para atualizar!");
+        }
 
         if (StringUtils.hasText(beer.getBeerName())) {
             beerToUpdate.setBeerName(beer.getBeerName());
@@ -129,6 +138,9 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public void delete(UUID beerId) {
+        if(beerMap.get(beerId) == null) {
+            throw new NotFountException("Entidade não encontrada para excluir!");
+        }
         beerMap.remove(beerId);
     }
 
@@ -139,6 +151,9 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public Beer findById(UUID beerId) {
+        if(beerMap.get(beerId) == null) {
+            throw new NotFountException("Entidade não encontrada!");
+        }
         return beerMap.get(beerId);
     }
 }

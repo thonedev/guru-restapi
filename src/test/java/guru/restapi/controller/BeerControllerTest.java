@@ -1,34 +1,28 @@
 package guru.restapi.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.restapi.model.Beer;
 import guru.restapi.model.BeerStyle;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
+import org.springframework.test.web.reactive.server.WebTestClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 class BeerControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    WebTestClient webTestClient;
 
     @Autowired
     ObjectMapper objectMapper;
 
     @Test
-    void testBeerLifecycle() throws Exception {
+    void testBeerLifecycle() {
         Beer beer = Beer.builder()
                 .beerName("New Beer")
                 .beerStyle(BeerStyle.IPA)
@@ -38,15 +32,22 @@ class BeerControllerTest {
                 .build();
 
         // Test Create
-        String location = mockMvc.perform(post("/api/v1/beer")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(beer)))
-                .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
-                .andReturn().getResponse().getHeader("Location");
+        var location = webTestClient.post()
+                .uri("/api/v1/beer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(beer)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().exists("Location")
+                .returnResult(Void.class)
+                .getResponseHeaders()
+                .getFirst("Location");
 
         // Test Delete
-        mockMvc.perform(delete(location))
-                .andExpect(status().isNoContent());
+        assert location != null;
+        webTestClient.delete()
+                .uri(location)
+                .exchange()
+                .expectStatus().isNoContent();
     }
 }
